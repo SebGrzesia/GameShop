@@ -32,6 +32,7 @@ namespace GameStore.Controllers
                 Genre = gamesFromDatabase.Genre,
                 Price = gamesFromDatabase.Price
             });
+            gamesList = gamesList.OrderByDescending(t => t.ReleaseDate);
             var gamesListViewModel = new GamesListViewModel();
             gamesListViewModel.GamesViewModels = gamesList.ToList();
             return View(gamesListViewModel);
