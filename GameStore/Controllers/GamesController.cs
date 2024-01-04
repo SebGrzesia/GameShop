@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using GameStore.Data;
 using GameStore.Models;
 using GameStore.ViewModels.Games;
+using NuGet.Frameworks;
 
 namespace GameStore.Controllers
 {
@@ -21,9 +22,21 @@ namespace GameStore.Controllers
         }
 
         // GET: Games
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var gamesFromDatabase = await _context.Games.ToListAsync();
+            if (_context.Games == null)
+            {
+                return Problem("GameContext is null");
+            }
+
+            var gameQuery = from m in _context.Games select m;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                gameQuery = gameQuery.Where(s => s.Name!.Contains(searchString));
+            }
+
+            var gamesFromDatabase = await gameQuery.ToListAsync();
             var gamesList = gamesFromDatabase.Select(gamesFromDatabase => new GamesViewModel()
             {
                 ID = gamesFromDatabase.ID,
@@ -33,11 +46,10 @@ namespace GameStore.Controllers
                 Price = gamesFromDatabase.Price
             });
             gamesList = gamesList.OrderByDescending(t => t.ReleaseDate);
+
             var gamesListViewModel = new GamesListViewModel();
             gamesListViewModel.GamesViewModels = gamesList.ToList();
             return View(gamesListViewModel);
-            
-
         }
 
         // GET: Games/Details/5
