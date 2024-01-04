@@ -1,9 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace GameStore.ViewModels
+﻿namespace GameStore.ViewModels.Games
 {
-    public class GameViewModel
+    public class DeleteGameViewModel
     {
+        public string ID { get; set; }
         public string? Name { get; set; }
         public DateTime ReleaseDate { get; set; }
         public string? Genre { get; set; }

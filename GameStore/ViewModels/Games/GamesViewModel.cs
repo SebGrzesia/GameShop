@@ -1,19 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Security.Cryptography.X509Certificates;
 
-namespace GameStore.Models
+namespace GameStore.ViewModels.Games
 {
-    public class Games
+    public class GamesViewModel
     {
         public string ID { get; set; }
         public string? Name { get; set; }
+        [DataType(DataType.Date)]
         public DateTime ReleaseDate { get; set; }
         public string? Genre { get; set; }
         public decimal Price { get; set; }
-
-        public Games()
-        {
-            this.ID = Guid.NewGuid().ToString();
-        }
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using GameStore.Data;
 using GameStore.Models;
+using GameStore.ViewModels.Games;
 
 namespace GameStore.Controllers
 {
@@ -22,31 +23,51 @@ namespace GameStore.Controllers
         // GET: Games
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Games.ToListAsync());
+            var gamesFromDatabase = await _context.Games.ToListAsync();
+            var gamesList = gamesFromDatabase.Select(gamesFromDatabase => new GamesViewModel()
+            {
+                ID = gamesFromDatabase.ID,
+                Name = gamesFromDatabase.Name,
+                ReleaseDate = gamesFromDatabase.ReleaseDate,
+                Genre = gamesFromDatabase.Genre,
+                Price = gamesFromDatabase.Price
+            });
+            var gamesListViewModel = new GamesListViewModel();
+            gamesListViewModel.GamesViewModels = gamesList.ToList();
+            return View(gamesListViewModel);
+            
+
         }
 
         // GET: Games/Details/5
         public async Task<IActionResult> Details(string id)
         {
-            if (id == null)
+            if (id == null || _context.Games == null)
             {
                 return NotFound();
             }
 
-            var games = await _context.Games
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (games == null)
+            var game = await _context.Games.FindAsync(id);
+            if (game == null)
             {
                 return NotFound();
             }
 
-            return View(games);
+            DetailsGameViewModel vm = new DetailsGameViewModel();
+            vm.ID = id;
+            vm.Name = game.Name;
+            vm.ReleaseDate = game.ReleaseDate;
+            vm.Genre = game.Genre;
+            vm.Price = game.Price;
+
+            return View(vm);
         }
 
         // GET: Games/Create
         public IActionResult Create()
         {
-            return View();
+            CreateGameViewModel vm = new CreateGameViewModel();
+            return View(vm);
         }
 
         // POST: Games/Create
@@ -54,31 +75,40 @@ namespace GameStore.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,Name,ReleaseDate,Genre,Price")] Games games)
+        public async Task<IActionResult> Create(CreateGameViewModel vm)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(games);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(games);
+            Games game = new Games();
+            game.Name = vm.Name;
+            game.ReleaseDate = vm.ReleaseDate;
+            game.Genre = vm.Genre;
+            game.Price = vm.Price;
+
+            _context.Add(game);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Games/Edit/5
         public async Task<IActionResult> Edit(string id)
         {
-            if (id == null)
+            if (id == null || _context.Games == null)
             {
                 return NotFound();
             }
 
-            var games = await _context.Games.FindAsync(id);
-            if (games == null)
+            var game = await _context.Games.FindAsync(id);
+            if( game == null )
             {
                 return NotFound();
             }
-            return View(games);
+            
+            EditGameViewModel vm = new EditGameViewModel();
+            vm.Name = game.Name;
+            vm.ReleaseDate = game.ReleaseDate;
+            vm.Genre = game.Genre;
+            vm.Price = game.Price;
+            return View(vm);
         }
 
         // POST: Games/Edit/5
@@ -86,52 +116,43 @@ namespace GameStore.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("ID,Name,ReleaseDate,Genre,Price")] Games games)
+        public async Task<IActionResult> Edit(EditGameViewModel vm)
         {
-            if (id != games.ID)
+            var game = await _context.Games.FindAsync(vm.ID);
+            if ( game == null)
             {
-                return NotFound();
+                return View(vm);
             }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(games);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!GamesExists(games.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(games);
+            game.Name = vm.Name;
+            game.ReleaseDate = vm.ReleaseDate;
+            game.Genre = vm.Genre;
+            game.Price = vm.Price;
+            
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Games/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
-            if (id == null)
+            if (id == null || _context.Games == null)
             {
                 return NotFound();
             }
 
-            var games = await _context.Games
-                .FirstOrDefaultAsync(m => m.ID == id);
-            if (games == null)
+            var game = await _context.Games.FindAsync(id);
+            if (game == null)
             {
                 return NotFound();
             }
 
-            return View(games);
+            DeleteGameViewModel vm = new DeleteGameViewModel();
+            vm.Name = game.Name;
+            vm.ReleaseDate = game.ReleaseDate;
+            vm.Genre = game.Genre;
+            vm.Price = game.Price;
+
+            return View(vm);
         }
 
         // POST: Games/Delete/5
@@ -139,19 +160,18 @@ namespace GameStore.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var games = await _context.Games.FindAsync(id);
-            if (games != null)
+            if (_context.Games == null)
             {
-                _context.Games.Remove(games);
+                return Problem("Context is null");
+            }
+            var game = await _context.Games.FindAsync(id);
+            if( game != null)
+            {
+                _context.Games.Remove(game);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool GamesExists(string id)
-        {
-            return _context.Games.Any(e => e.ID == id);
         }
     }
 }
