@@ -22,18 +22,24 @@ namespace GameStore.Controllers
         }
 
         // GET: Games
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(string searchString, string gameGenre)
         {
             if (_context.Games == null)
             {
                 return Problem("GameContext is null");
             }
 
+            IQueryable<string?> genreQuery = _context.Games.Select(g => g.Genre).Distinct();
+
             var gameQuery = from m in _context.Games select m;
 
-            if (!String.IsNullOrEmpty(searchString))
+            if (!string.IsNullOrEmpty(searchString))
             {
                 gameQuery = gameQuery.Where(s => s.Name!.Contains(searchString));
+            }
+            if (!string.IsNullOrEmpty(gameGenre))
+            {
+                gameQuery = gameQuery.Where(z => z.Genre == gameGenre);
             }
 
             var gamesFromDatabase = await gameQuery.ToListAsync();
@@ -47,9 +53,13 @@ namespace GameStore.Controllers
             });
             gamesList = gamesList.OrderByDescending(t => t.ReleaseDate);
 
-            var gamesListViewModel = new GamesListViewModel();
-            gamesListViewModel.GamesViewModels = gamesList.ToList();
-            return View(gamesListViewModel);
+            var gamesGenreViewModel = new GamesGenreViewModel
+            {
+                Genres = new SelectList(await genreQuery.ToListAsync()),
+                GamesViewModels = gamesList.ToList()
+            };
+
+            return View(gamesGenreViewModel);
         }
 
         // GET: Games/Details/5
