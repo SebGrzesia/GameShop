@@ -8,7 +8,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<GameStoreContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("GameStoreContext") ?? throw new InvalidOperationException("Connection string 'GameStoreContext' not found.")));
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true).AddEntityFrameworkStores<GameStoreContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>().AddDefaultTokenProviders()
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<GameStoreContext>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
