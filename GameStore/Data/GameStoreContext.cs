@@ -15,5 +15,7 @@ namespace GameStore.Data
         }
 
         public DbSet<GameStore.Models.Games> Games { get; set; } = default!;
+
+        public DbSet<UserLeadEntity> UserLead { get; set; }
     }
 }
