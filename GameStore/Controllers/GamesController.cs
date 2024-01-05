@@ -9,9 +9,11 @@ using GameStore.Data;
 using GameStore.Models;
 using GameStore.ViewModels.Games;
 using NuGet.Frameworks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GameStore.Controllers
 {
+    [Authorize]
     public class GamesController : Controller
     {
         private readonly GameStoreContext _context;
