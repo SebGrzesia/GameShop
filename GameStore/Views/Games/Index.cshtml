@@ -1,4 +1,4 @@
-﻿@model GameStore.ViewModels.Games.GamesListViewModel
+﻿@model GameStore.ViewModels.Games.GamesGenreViewModel
 
 @{
     ViewData["Title"] = "Games";
@@ -9,6 +9,17 @@
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+
+<form asp-controller="Games" asp-action="Index">
+    <p>
+        <select asp-for="GameGenre" asp-items="Model.Genres">
+            <option value="">All</option>
+        </select>
+
+        Title: <input type="text" asp-for="SearchString" />
+        <input type="submit" value="Filter" />
+    </p>
+</form>
 <table class="table">
     <thead>
         <tr>

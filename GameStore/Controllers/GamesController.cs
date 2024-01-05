@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using GameStore.Data;
 using GameStore.Models;
 using GameStore.ViewModels.Games;
+using NuGet.Frameworks;
 
 namespace GameStore.Controllers
 {
@@ -21,9 +22,27 @@ namespace GameStore.Controllers
         }
 
         // GET: Games
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, string gameGenre)
         {
-            var gamesFromDatabase = await _context.Games.ToListAsync();
+            if (_context.Games == null)
+            {
+                return Problem("GameContext is null");
+            }
+
+            IQueryable<string?> genreQuery = _context.Games.Select(g => g.Genre).Distinct();
+
+            var gameQuery = from m in _context.Games select m;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                gameQuery = gameQuery.Where(s => s.Name!.Contains(searchString));
+            }
+            if (!string.IsNullOrEmpty(gameGenre))
+            {
+                gameQuery = gameQuery.Where(z => z.Genre == gameGenre);
+            }
+
+            var gamesFromDatabase = await gameQuery.ToListAsync();
             var gamesList = gamesFromDatabase.Select(gamesFromDatabase => new GamesViewModel()
             {
                 ID = gamesFromDatabase.ID,
@@ -33,11 +52,14 @@ namespace GameStore.Controllers
                 Price = gamesFromDatabase.Price
             });
             gamesList = gamesList.OrderByDescending(t => t.ReleaseDate);
-            var gamesListViewModel = new GamesListViewModel();
-            gamesListViewModel.GamesViewModels = gamesList.ToList();
-            return View(gamesListViewModel);
-            
 
+            var gamesGenreViewModel = new GamesGenreViewModel
+            {
+                Genres = new SelectList(await genreQuery.ToListAsync()),
+                GamesViewModels = gamesList.ToList()
+            };
+
+            return View(gamesGenreViewModel);
         }
 
         // GET: Games/Details/5
