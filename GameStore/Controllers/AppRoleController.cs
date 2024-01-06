@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace GameStore.Controllers
 {
+    [Authorize(Roles ="Admin")]
     public class AppRoleController : Controller
     {
         private readonly RoleManager<IdentityRole> _roleManager;

@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace GameStore.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="Admin, Moderator")]
     public class LeadsController : Controller
     {
         private readonly GameStoreContext _context;
