@@ -22,6 +22,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    AddRoles.Initialize(services, roleManager).Wait();
     AddBasicGames.Initialize(services);
 }
 
