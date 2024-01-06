@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using GameStore.Data;
 using GameStore.Models;
 using Microsoft.AspNetCore.Identity;
+using FluentAssertions.Common;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<GameStoreContext>(options =>

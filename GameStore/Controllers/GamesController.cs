@@ -10,6 +10,8 @@ using GameStore.Models;
 using GameStore.ViewModels.Games;
 using NuGet.Frameworks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
+using System.Collections;
 
 namespace GameStore.Controllers
 {
@@ -17,10 +19,13 @@ namespace GameStore.Controllers
     public class GamesController : Controller
     {
         private readonly GameStoreContext _context;
+        private readonly IMemoryCache _cache;
+        private readonly string cacheKey = "gamesCacheKey";
 
-        public GamesController(GameStoreContext context)
+        public GamesController(GameStoreContext context, IMemoryCache cache)
         {
             _context = context;
+            _cache = cache;
         }
 
         // GET: Games
@@ -29,6 +34,22 @@ namespace GameStore.Controllers
             if (_context.Games == null)
             {
                 return Problem("GameContext is null");
+            }
+            
+            if(_cache.TryGetValue(cacheKey, out IEnumerable<Games> games))
+            {
+
+            }
+            else
+            {
+                games = _context.Games.ToList();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromSeconds(40))
+                    .SetAbsoluteExpiration(TimeSpan.FromSeconds(3600))
+                    .SetPriority(CacheItemPriority.Normal);
+
+                _cache.Set(cacheKey, games, cacheEntryOptions);
             }
 
             IQueryable<string?> genreQuery = _context.Games.Select(g => g.Genre).Distinct();
@@ -197,6 +218,12 @@ namespace GameStore.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        public IActionResult ClearCache()
+        {
+            _cache.Remove(cacheKey);
+            return RedirectToAction("Index");
         }
     }
 }
