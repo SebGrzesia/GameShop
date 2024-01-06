@@ -20,5 +20,4 @@ Then select "Tools" => "NuGet Package Manager" =>  "Package manager console"
 
 In the console, enter the commands listed below.
 ## Commands
-* Add-Migration InitialCreate
 * Update-Database
